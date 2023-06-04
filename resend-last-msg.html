@@ -17,6 +17,7 @@
     color: "#7a9ab8",
     defaults: {
       name: { value: "" },
+      showInputCounter: { value: true },
     },
 
     inputs: 1,
@@ -91,9 +92,17 @@
 </script>
 
 <script type="text/x-red" data-template-name="resend last">
-     <div class="form-row" id="node-input-nameView">
-      <label for="node-input-name"><i class="icon-tag"></i>name</label>
-      <input type="text" id="node-input-name"placeholder="name (optional)">
+  <br/>
+  <div class="form-row" id="node-input-nameView">
+    <label for="node-input-name"><i class="icon-tag"></i>name</label>
+    <input type="text" id="node-input-name"placeholder="name (optional)">
+  </div>
+
+  <br/>
+  <div class="form-row">
+    <label>&nbsp;</label>
+    <input type="checkbox" id="node-input-showInputCounter" style="display: inline-block; width: auto; vertical-align: top;">
+    <label for="node-input-showInputCounter" style="width:70%;">Show Input Counter</label>
   </div>
 </script>
 

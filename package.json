@@ -1,23 +1,29 @@
 {
-	"name": "node-red-contrib-resend-last-msg",
-	"version": "1.0.0",
-	"description": "Resend last message received",
-	"main": "index.js",
-	"scripts": {
-		"test": "echo \"Error: no test specified\" && exit 1"
-	},
-	"author": "Daniel B",
-	"license": "Apache-2.0",
-	"keywords": [
-		"node-red",
-		"resend",
-		"last",
-		"reinject",
-		"repeat"
-	],
-	"node-red": {
-		"nodes": {
-			"resend-last-msg": "resend-last-msg.js"
-		}
-	}
+  "name": "node-red-contrib-resend-last-msg",
+  "version": "1.0.1",
+  "description": "Resend last message received",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Daniel B",
+  "license": "Apache-2.0",
+  "keywords": [
+    "node-red",
+    "resend",
+    "last",
+    "reinject",
+    "repeat",
+    "counter"
+  ],
+  "bugs": {
+    "url": "https://github.com/softy2k/node-red-contrib-resend-last-msg/issues"
+  },
+  "homepage": "https://github.com/softy2k/node-red-contrib-resend-last-msg",
+  "node-red": {
+    "version": ">=2.0.0",
+    "nodes": {
+      "resend-last-msg": "resend-last-msg.js"
+    }
+  }
 }
