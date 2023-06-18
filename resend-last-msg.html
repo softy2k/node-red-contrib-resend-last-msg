@@ -11,6 +11,98 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
 -->
+
+<script type="text/html" data-template-name="resend last">
+      <br/>
+      <div class="form-row" id="node-input-nameView">
+        <label for="node-input-name"><i class="icon-tag"></i>name</label>
+        <input type="text" id="node-input-name"placeholder="name (optional)">
+      </div>
+
+      <br/>
+      <div class="form-row">
+        <label>&nbsp;</label>
+        <input type="checkbox" id="node-input-showInputCounter" style="display: inline-block; width: auto; vertical-align: top;">
+        <label for="node-input-showInputCounter" style="width:70%;">Show Input Counter</label>
+      </div>
+
+      <br/>
+      <div class="form-row row-resetCounterOptions hidden"  id="row-resetCounterOptions">
+        <label>&nbsp;</label>
+        <input type="checkbox" id="node-input-resetCounter" style="display: inline-block; width: auto; vertical-align: top;">
+        <label for="node-input-resetCounter" style="width:70%;">Reset counter at a specific time</label>
+
+        <div class="form-row inject-time-row hidden" id="inject-time-row-time">
+          <span>at</span>
+          <input type="text" id="inject-time-time" value="12:00"></input>
+
+          <br/>
+
+          <div id="inject-time-time-days" class="inject-time-days">
+              <div style="display:inline-block; vertical-align:top; margin-right:5px;">on</div>
+              <div style="display:inline-block;">
+                  <div>
+                      <label><input type='checkbox' checked value='1'/> <span >Monday</span></label>
+                      <label><input type='checkbox' checked value='2'/> <span >Tuesday</span></label>
+                      <label><input type='checkbox' checked value='3'/> <span >Wednesday</span></label>
+                  </div>
+                  <div>
+                      <label><input type='checkbox' checked value='4'/> <span >Thursday</span></label>
+                      <label><input type='checkbox' checked value='5'/> <span ></span>Friday</label>
+                      <label><input type='checkbox' checked value='6'/> <span ></span>Saturday</label>
+                  </div>
+                  <div>
+                      <label><input type='checkbox' checked value='0'/> <span >Sunday</span></label>
+                  </div>
+              </div>
+          </div>
+
+          <input type="hidden" id="node-input-repeat">
+          <input type="hidden" id="node-input-crontab">
+      </div>
+  </div>
+</script>
+
+<script type="text/html" data-help-name="resend last">
+  This node will resend the last received message when the button is pressed.
+  <h3>Inputs</h3>
+  <dl class="message-properties">
+    <dt>any message <span class="property-type">object</span></dt>
+  </dl>
+
+  <h3>Outputs</h3>
+  <dl class="message-properties">
+    <dt>the last message received <span class="property-type">object</span></dt>
+  </dl>
+</script>
+
+<style>
+  .inject-time-row {
+    padding-left: 110px;
+  }
+  .inject-time-row select {
+    margin: 3px 0;
+  }
+  .inject-time-days label {
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    vertical-align: baseline;
+    width: 100px;
+  }
+  .inject-time-days input {
+    width: auto !important;
+    vertical-align: baseline !important;
+  }
+  #inject-time-time {
+    width: 75px;
+    margin-left: 8px;
+    margin-bottom: 8px;
+  }
+</style>
+
 <script type="text/javascript">
   RED.nodes.registerType("resend last", {
     category: "input",
@@ -18,6 +110,16 @@
     defaults: {
       name: { value: "" },
       showInputCounter: { value: true },
+      resetCounter: { value: false },
+      repeat: {
+        value: "",
+        validate: function (v) {
+          return (
+            v === "" || (RED.validators.number(v) && v >= 0 && v <= 2147483)
+          );
+        },
+      },
+      crontab: { value: "" },
     },
 
     inputs: 1,
@@ -25,6 +127,97 @@
     icon: "resend-last.svg",
     label: function () {
       return this.name || "resend last";
+    },
+
+    oneditprepare: function () {
+      let node = this;
+
+      if (node.showInputCounter === undefined) {
+        node.showInputCounter = true;
+        $("#node-input-showInputCounter").prop("checked", true);
+      }
+
+      $("#node-input-resetCounter").on("change", function () {
+        if ($("#node-input-resetCounter").is(":checked"))
+          $(".inject-time-row").show();
+        else $(".inject-time-row").hide();
+      });
+
+      if (node.resetCounter === undefined) {
+        node.resetCounter = false;
+        $("#node-input-resetCounter").prop("checked", false);
+        $(".inject-time-row").hide();
+      }
+
+      $("#node-input-showInputCounter").on("change", function () {
+        if ($("#node-input-showInputCounter").is(":checked")) {
+          $(".row-resetCounterOptions").show();
+        } else {
+          $(".row-resetCounterOptions").hide();
+        }
+      });
+
+      if (node.crontab) {
+        let cronparts = node.crontab.split(" ");
+        let days = cronparts[4];
+
+        if (!isNaN(cronparts[0]) && !isNaN(cronparts[1])) {
+          let time = cronparts[1] + ":" + cronparts[0];
+
+          $("#inject-time-time").val(time);
+          $("#inject-time-type-select").val("s");
+          if (days == "*") {
+            $("#inject-time-time-days input[type=checkbox]").prop(
+              "checked",
+              true
+            );
+          } else {
+            $("#inject-time-time-days input[type=checkbox]").removeAttr(
+              "checked"
+            );
+            days.split(",").forEach(function (v) {
+              $("#inject-time-time-days [value=" + v + "]").prop(
+                "checked",
+                true
+              );
+            });
+          }
+        }
+      } else {
+        $(".inject-time-row").hide();
+
+        $("#inject-time-time").val("00:00");
+        $("#inject-time-time-days input[type=checkbox]").prop("checked", true);
+      }
+    },
+
+    oneditsave: function () {
+      let repeat = "";
+      let crontab = "";
+
+      let time = $("#inject-time-time").val();
+      let days = $("#inject-time-time-days  input[type=checkbox]:checked")
+        .map(function (_, el) {
+          return $(el).val();
+        })
+        .get();
+
+      if (days.length == 0) crontab = "";
+      else {
+        if (days.length == 7) days = "*";
+        else days = days.join(",");
+
+        let parts = time.split(":");
+        if (parts.length == 2) {
+          repeat = "";
+          parts[1] = ("00" + (parseInt(parts[1]) % 60)).substr(-2);
+          parts[0] = ("00" + (parseInt(parts[0]) % 24)).substr(-2);
+          crontab = parts[1] + " " + parts[0] + " * * " + days;
+        } else crontab = "";
+      }
+
+      $("#node-input-repeat").val(repeat);
+      $("#node-input-crontab").val(crontab);
     },
 
     button: {
@@ -42,7 +235,6 @@
           );
         }
 
-        // var label = this.name || "resend last";
         let node = this;
 
         $.ajax({
@@ -89,33 +281,4 @@
       },
     },
   });
-</script>
-
-<script type="text/x-red" data-template-name="resend last">
-  <br/>
-  <div class="form-row" id="node-input-nameView">
-    <label for="node-input-name"><i class="icon-tag"></i>name</label>
-    <input type="text" id="node-input-name"placeholder="name (optional)">
-  </div>
-
-  <br/>
-  <div class="form-row">
-    <label>&nbsp;</label>
-    <input type="checkbox" id="node-input-showInputCounter" style="display: inline-block; width: auto; vertical-align: top;">
-    <label for="node-input-showInputCounter" style="width:70%;">Show Input Counter</label>
-  </div>
-</script>
-
-<script type="text/x-red" data-help-name="resend last">
-  This node will resend the last received message when the button is pressed
-  <h3>Inputs</h3>
-  <dl class="message-properties">
-      <dt>any message <span class="property-type">object</span></dt>
-  </dl>
-
-  <h3>Outputs</h3>
-  <dl class="message-properties">
-      <dt>the last message received <span class="property-type">object</span></dt>
-      </dd>
-  </dl>
 </script>

@@ -1,13 +1,26 @@
 module.exports = function (RED) {
   "use strict";
+  const { scheduleTask } = require("cronosjs");
 
   function ResendLastMsgNode(config) {
     RED.nodes.createNode(this, config);
 
     let node = this;
+    node.status({ fill: "", shape: "", text: "" });
+
     let data = new Map();
 
     let showInputCounter = config.showInputCounter;
+    let resetCounter = config.resetCounter;
+    let cronExpression = config.crontab;
+    let task = null;
+
+    if (showInputCounter && resetCounter) {
+      task = scheduleTask(cronExpression, () => {
+        data.set("countIN", 0);
+        node.status({ fill: "yellow", shape: "dot", text: 0 });
+      });
+    }
 
     data.set("countIN", 0);
     data.set("redMSG", {});
@@ -46,7 +59,11 @@ module.exports = function (RED) {
 
     node.on("close", function () {
       node.status({ fill: "", shape: "", text: "" });
+
+      task.stop();
+      done();
     });
   }
+
   RED.nodes.registerType("resend last", ResendLastMsgNode);
 };
