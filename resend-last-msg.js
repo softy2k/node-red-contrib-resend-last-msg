@@ -11,7 +11,11 @@ module.exports = function (RED) {
     let data = new Map();
 
     let showInputCounter = config.showInputCounter;
+    if (showInputCounter === undefined) showInputCounter = true;
+
     let resetCounter = config.resetCounter;
+    if (resetCounter === undefined) resetCounter = false;
+   
     let cronExpression = config.crontab;
     let task = null;
 

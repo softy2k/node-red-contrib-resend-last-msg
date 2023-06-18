@@ -113,11 +113,11 @@
       resetCounter: { value: false },
       repeat: {
         value: "",
-        validate: function (v) {
-          return (
-            v === "" || (RED.validators.number(v) && v >= 0 && v <= 2147483)
-          );
-        },
+        // validate: function (v) {
+        //   return (
+        //     v === "" || (RED.validators.number(v) && v >= 0 && v <= 2147483)
+        //   );
+        // },
       },
       crontab: { value: "" },
     },
