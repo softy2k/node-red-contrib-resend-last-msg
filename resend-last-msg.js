@@ -10,12 +10,15 @@ module.exports = function (RED) {
 
     let data = new Map();
 
+    let msgPayloadOnly = config.msgPayloadOnly;
+    if (msgPayloadOnly === undefined) msgPayloadOnly = false;
+
     let showInputCounter = config.showInputCounter;
     if (showInputCounter === undefined) showInputCounter = true;
 
     let resetCounter = config.resetCounter;
     if (resetCounter === undefined) resetCounter = false;
-   
+
     let cronExpression = config.crontab;
     let task = null;
 
@@ -26,8 +29,8 @@ module.exports = function (RED) {
       });
     }
 
-    data.set("countIN", 0);
     data.set("redMSG", {});
+    data.set("countIN", 0);
 
     node.on("input", function (msg) {
       let counter = data.get("countIN");
@@ -48,14 +51,16 @@ module.exports = function (RED) {
           msg = RED.util.cloneMessage(savedMsg);
         }
       } else {
+        if (msgPayloadOnly)
+          data.set("redMSG", RED.util.cloneMessage(msg.payload));
+        else data.set("redMSG", RED.util.cloneMessage(msg));
+
         counter++;
         data.set("countIN", counter);
 
         if (showInputCounter)
           node.status({ fill: "blue", shape: "dot", text: counter });
         else node.status({ fill: "", shape: "", text: "" });
-
-        data.set("redMSG", RED.util.cloneMessage(msg));
       }
 
       node.send(msg);

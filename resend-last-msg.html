@@ -22,11 +22,17 @@
       <br/>
       <div class="form-row">
         <label>&nbsp;</label>
+        <input type="checkbox" id="node-input-msgPayloadOnly" style="display: inline-block; width: auto; vertical-align: top;">
+        <label for="node-input-msgPayloadOnly" style="width:70%;">Resend only msg.payload</label>
+      </div>
+
+      <br/>
+      <div class="form-row">
+        <label>&nbsp;</label>
         <input type="checkbox" id="node-input-showInputCounter" style="display: inline-block; width: auto; vertical-align: top;">
         <label for="node-input-showInputCounter" style="width:70%;">Show Input Counter</label>
       </div>
 
-      <br/>
       <div class="form-row row-resetCounterOptions hidden"  id="row-resetCounterOptions">
         <label>&nbsp;</label>
         <input type="checkbox" id="node-input-resetCounter" style="display: inline-block; width: auto; vertical-align: top;">
@@ -109,6 +115,7 @@
     color: "#7a9ab8",
     defaults: {
       name: { value: "" },
+      msgPayloadOnly: { value: false },
       showInputCounter: { value: true },
       resetCounter: { value: false },
       repeat: {
@@ -131,6 +138,11 @@
 
     oneditprepare: function () {
       let node = this;
+
+      if (node.msgPayloadOnly === undefined) {
+        node.msgPayloadOnly = false;
+        $("#node-input-msgPayloadOnly").prop("checked", false);
+      }
 
       if (node.showInputCounter === undefined) {
         node.showInputCounter = true;
