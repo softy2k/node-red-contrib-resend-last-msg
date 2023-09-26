@@ -19,7 +19,8 @@ npm install node-red-contrib-resend-last-msg
 When this node receives a msg via input it will pass it through and store it (using deep clone).
 The node will resend the last received msg when the button is pressed.
 
-Optionally, the node also counts received messages. The message counter can be reset automatically by choosing the time and day(s) of the week.
+Optionally, you can resend msg.payload only.
+Additionally, the node counts received messages. The message counter can be reset automatically by choosing the time and day(s) of the week.
 
 ## License
 

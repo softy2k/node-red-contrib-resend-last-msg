@@ -52,7 +52,7 @@ module.exports = function (RED) {
         }
       } else {
         if (msgPayloadOnly)
-          data.set("redMSG", RED.util.cloneMessage(msg.payload));
+          data.set("redMSG", { payload: RED.util.cloneMessage(msg.payload) });
         else data.set("redMSG", RED.util.cloneMessage(msg));
 
         counter++;
