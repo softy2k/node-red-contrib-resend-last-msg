@@ -35,25 +35,98 @@ module.exports = function (RED) {
     node.on("input", function (msg) {
       let counter = data.get("countIN");
 
-      if (Object.keys(msg).length === 1) {
-        if (counter === 0) {
-          node.status({
-            fill: "red",
-            shape: "dot",
-            text: "Nothing to resend",
-          });
-          this.error("Nothing to resend", msg);
+      if ("_ResendLastMsg" in msg) {
+        const resendOptions = msg._ResendLastMsg || {};
+        const resendKeys = Object.keys(resendOptions).length;
+
+        if (resendKeys > 0) {
+          if ("setCounter" in resendOptions) {
+            const newCounter = Math.max(
+              parseInt(resendOptions.setCounter, 10) || 0,
+              0
+            );
+            data.set("countIN", newCounter);
+            node.status({ fill: "yellow", shape: "dot", text: newCounter });
+            if (resendKeys === 1) return; // Exit if this was the only option
+          }
+
+          const savedMsg = data.get("redMSG");
+          const hasSavedMsg = Object.keys(savedMsg || {}).length > 0;
+
+          if (resendOptions.resend) {
+            if (!hasSavedMsg) {
+              node.status({
+                fill: "yellow",
+                shape: "dot",
+                text: "Nothing to resend",
+              });
+              node.error("Nothing to resend", msg);
+              return;
+            }
+
+            if (resendOptions.resend === true) {
+              node.status({ fill: "green", shape: "dot", text: "Resend All" });
+              node.send(RED.util.cloneMessage(savedMsg));
+            } else if (resendOptions.resend in savedMsg) {
+              node.status({
+                fill: "blue",
+                shape: "dot",
+                text: `Resend ${resendOptions.resend}`,
+              });
+              node.send({
+                [resendOptions.resend]: savedMsg[resendOptions.resend],
+              });
+            } else {
+              node.status({
+                fill: "yellow",
+                shape: "dot",
+                text: "Invalid Resend Key",
+              });
+              node.error(
+                `Requested key '${resendOptions.resend}' does not exist in saved message`,
+                msg
+              );
+            }
+            return;
+          }
+
+          if (resendOptions.reset) {
+            data.set("redMSG", undefined);
+            data.set("countIN", 0);
+            node.status({ fill: "red", shape: "dot", text: "Reset Msg" });
+            return;
+          }
+
+          node.status({ fill: "yellow", shape: "dot", text: "Nothing to do" });
           return;
         } else {
-          const savedMsg = data.get("redMSG");
-          node.status({ fill: "green", shape: "dot", text: "Resend Last" });
-
-          msg = RED.util.cloneMessage(savedMsg);
+          node.status({
+            fill: "yellow",
+            shape: "dot",
+            text: "Empty config msg",
+          });
+          node.error(`msg._ResendLastMsg is empty`);
+          return;
         }
+      }
+
+      if (Object.keys(msg).length === 1) {
+        if (counter === 0) {
+          node.status({ fill: "red", shape: "dot", text: "Nothing to resend" });
+          node.error("Nothing to resend", msg);
+          return;
+        }
+
+        msg = RED.util.cloneMessage(data.get("redMSG")); // Restoring Previous Message
+        node.status({ fill: "green", shape: "dot", text: "Resend Last" });
       } else {
-        if (msgPayloadOnly)
-          data.set("redMSG", { payload: RED.util.cloneMessage(msg.payload) });
-        else data.set("redMSG", RED.util.cloneMessage(msg));
+        // Storing new message
+        data.set(
+          "redMSG",
+          msgPayloadOnly
+            ? { payload: RED.util.cloneMessage(msg.payload) }
+            : RED.util.cloneMessage(msg)
+        );
 
         counter++;
         data.set("countIN", counter);
@@ -63,7 +136,7 @@ module.exports = function (RED) {
         else node.status({ fill: "", shape: "", text: "" });
       }
 
-      node.send(msg);
+      node.send(msg); // Sending Message
     });
 
     node.on("close", function () {
