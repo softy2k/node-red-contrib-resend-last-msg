@@ -33,6 +33,13 @@ module.exports = function (RED) {
     data.set("countIN", 0);
 
     node.on("input", function (msg) {
+      let origine = "";
+
+      if (msg.__user_inject_props__ === "injectxyz_flag") {
+        origine = "internal";
+        delete msg.__user_inject_props__;
+      } else origine = "external";
+
       let counter = data.get("countIN");
 
       if ("_ResendLastMsg" in msg) {
@@ -110,7 +117,7 @@ module.exports = function (RED) {
         }
       }
 
-      if (Object.keys(msg).length === 1) {
+      if (origine === "internal" && Object.keys(msg).length === 1) {
         if (counter === 0) {
           node.status({ fill: "red", shape: "dot", text: "Nothing to resend" });
           node.error("Nothing to resend", msg);
@@ -148,4 +155,14 @@ module.exports = function (RED) {
   }
 
   RED.nodes.registerType("resend last", ResendLastMsgNode);
+
+  RED.httpAdmin.post(
+    "/injectResendLastMsg/:id",
+    RED.auth.needsPermission("injectResendLastMsg.write"),
+    function (req, res) {
+      const node = RED.nodes.getNode(req.params.id);
+      node.receive(req.body);
+      res.sendStatus(200);
+    }
+  );
 };

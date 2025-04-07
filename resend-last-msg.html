@@ -70,10 +70,18 @@
 </script>
 
 <script type="text/html" data-help-name="resend last">
-  This node will resend the last received message when the button is pressed.
+  <p>
+    This node will resend the last received message when the button is pressed.
+  </p>
+  <p>
+    The node can also be controlled via an incoming message using
+    <span style="color:brown">msg._ResendLastMsg</span>
+    <br />
+    This control property is not forwarded by the Resend Node.
+  </p>
   <h3>Inputs</h3>
   <dl class="message-properties">
-    <dt>any message <span class="property-type">object</span></dt>
+    <dt>any message<span class="property-type">object</span></dt>
   </dl>
 
   <h3>Outputs</h3>
@@ -248,10 +256,12 @@
         }
 
         let node = this;
+        const customMsg = { __user_inject_props__: "injectxyz_flag" };
 
         $.ajax({
-          url: "inject/" + this.id,
+          url: "injectResendLastMsg/" + node.id,
           type: "POST",
+          data: customMsg,
           success: function (resp, textStatus, xhr) {
             RED.notify(node._("The last message has been resent"), "success");
           },

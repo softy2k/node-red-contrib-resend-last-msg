@@ -1,6 +1,7 @@
 ## node-red-contrib-resend-last-msg
 
-A lightweight Node-RED node that allows you to resend the last received message by pressing a simple button. Especially useful for diagnostics.
+A lightweight Node-RED node that allows you to resend the last received message by pressing a simple button. The node can also be controlled via an incoming message using ```msg._ResendLastMsg```
+
 
 ## Installation
 
@@ -31,7 +32,7 @@ The node will resend the last received message when the button is pressed.
 - **Message Counter**: The node counts received messages, and the counter can reset automatically based on configured time and days of the week.
 
 
-## Node Control (Version >= 1.1.0)
+### Node Control (Version >= 1.1.0)
 The node can also be controlled via an incoming message using `msg._ResendLastMsg`. This control property is not forwarded by the Resend Node.
 
 
@@ -78,6 +79,15 @@ msg._ResendLastMsg = {
 
 - The `setCounter` option can be used together with other control options.
 - It accepts only positive numbers; otherwise, it defaults to `0`.
+
+
+## Examples
+Examples are provided using the default node-red way, i.e. use ```import``` in the editor menu and look for examples in the ```node-red-contrib-resend-last-msg``` package
+
+
+## Usage Examples
+The examples are available in the *examples* folder. You can import it directly from Node-RED.
+
 
 ## Example Flow
 
